@@ -91,6 +91,48 @@ fun Family.findUnclesOrAunts(name: String, paternal: Boolean, findUncles: Boolea
 }
 
 /**
+ * an extension function to find the Brothers or Sisters in laws.
+ *
+ * @param name the name of target family member.
+ * @return the [List] of name brothers-in-law or sisters-in-law ([Person]).
+ */
+fun Family.findInLaws(name: String, isBrotherInLaw: Boolean): List<Person> {
+    val person = findPersonByName(name) ?: return emptyList()
+    val family = findFamilyByPerson(person) ?: return emptyList()
+
+    val inLaws = mutableSetOf<Person>()
+
+    // -- Find from spouse's siblings --
+    val spouse = if (family.husband?.name == name) family.wife else family.husband
+    if (spouse != null && spouse.isChildOfParent) {
+        val spouseFamily = findFamilyByPerson(spouse)
+        spouseFamily?.parent?.children?.forEach {
+            if (isBrotherInLaw && it.husband != null && it.husband != spouse) {
+                inLaws.add(it.husband)
+            } else if (it.wife != null && it.wife != spouse) {
+                inLaws.add(it.wife)
+            }
+        }
+    }
+
+    // -- Find from siblings' spouses --
+    val parentFamily = family.parent
+    requireNotNull(parentFamily) { return inLaws.toList() }
+
+    parentFamily.children?.filter {
+        it != family
+    }?.forEach { siblingFamily ->
+        if (isBrotherInLaw && siblingFamily.husband != null && !siblingFamily.husband.isChildOfParent) {
+            inLaws.add(siblingFamily.husband)
+        } else if (siblingFamily.wife != null && !siblingFamily.wife.isChildOfParent) {
+            inLaws.add(siblingFamily.wife)
+        }
+    }
+    return inLaws.toList()
+}
+
+
+/**
  * an extension function to find the relationship of target family member.
  *
  * @param name the name of target family member.
@@ -106,6 +148,7 @@ fun Family.findRelationship(name: String, relationship: Relationship): List<Pers
         Relationship.MATERNAL_UNCLE -> this.findUnclesOrAunts(name, paternal = false, findUncles = true)
         Relationship.PATERNAL_AUNT -> this.findUnclesOrAunts(name, paternal = true, findUncles = false)
         Relationship.MATERNAL_AUNT -> this.findUnclesOrAunts(name, paternal = false, findUncles = false)
-        else -> emptyList()
+        Relationship.BROTHER_IN_LAW -> this.findInLaws(name, true)
+        Relationship.SISTER_IN_LAW -> this.findInLaws(name, false)
     }
 }

@@ -240,4 +240,92 @@ class FamilyTreeTest {
         val result = kingArthurFamily.findInLaws(name, false)
         assert(result.isEmpty())
     }
+
+    @Test
+    fun `addChild, person not found`() {
+        val result = familyTree.addChild("Pona", "Nebraska", Gender.MALE)
+        assert(result == "PERSON_NOT_FOUND")
+    }
+
+    @Test
+    fun `addChild, failed to add because given father name`() {
+        val result = familyTree.addChild("Harry", "Nebraska", Gender.MALE)
+        assert(result == "CHILD_ADDITION_FAILED")
+    }
+
+    @Test
+    fun `addChild, success to add new Boy`() {
+        val motherName = "Darcy"
+        // -- validate the children before add the new child --
+        val mother = familyTree.kingArthurFamily.findPersonByName(motherName)
+        requireNotNull(mother)
+        var family = familyTree.kingArthurFamily.findFamilyByPerson(mother)
+        assert(family?.children?.size == 1)
+
+        val result = familyTree.addChild(motherName, "Nebraska", Gender.MALE)
+        assert(result == "CHILD_ADDED")
+        // -- validate the children after add the new child --
+        family = familyTree.kingArthurFamily.findFamilyByPerson(mother)
+        assert(family?.children?.size == 2)
+    }
+
+    @Test
+    fun `getRelationShip, siblings but empty`() {
+        val result = familyTree.getRelationShip("Remus", Relationship.SIBLINGS)
+        assert(result.isEmpty())
+    }
+
+    @Test
+    fun `getRelationShip, sister in laws found`() {
+        val result = familyTree.getRelationShip("Lily", Relationship.SISTER_IN_LAW)
+        assert(result.size == 2)
+    }
+
+    @Test
+    fun `getRelationShip, son found`() {
+        val result = familyTree.getRelationShip("Arthur", Relationship.SON)
+        assert(result.size == 4)
+    }
+
+    @Test
+    fun `getRelationShip, daughter found`() {
+        val result = familyTree.getRelationShip("Malfoy", Relationship.DAUGHTER)
+        assert(result.size == 1)
+    }
+
+    @Test
+    fun `getRelationShip, siblings found`() {
+        val result = familyTree.getRelationShip("Draco", Relationship.SIBLINGS)
+        assert(result.size == 1)
+    }
+
+    @Test
+    fun `getRelationShip, brother in law found`() {
+        val result = familyTree.getRelationShip("Malfoy", Relationship.BROTHER_IN_LAW)
+        assert(result.size == 1)
+    }
+
+    @Test
+    fun `getRelationShip, paternal uncle`() {
+        val result = familyTree.getRelationShip("William", Relationship.PATERNAL_UNCLE)
+        assert(result.size == 1)
+    }
+
+    @Test
+    fun `getRelationShip, paternal aunt`() {
+        val result = familyTree.getRelationShip("William", Relationship.PATERNAL_AUNT)
+        assert(result.size == 2)
+    }
+
+    @Test
+    fun `getRelationShip, maternal uncle`() {
+        val result = familyTree.getRelationShip("Albus", Relationship.MATERNAL_UNCLE)
+        assert(result.size == 4)
+    }
+
+    @Test
+    fun `getRelationShip, maternal aunt`() {
+        val result = familyTree.getRelationShip("Albus", Relationship.MATERNAL_AUNT)
+        assert(result.size == 3)
+    }
 }

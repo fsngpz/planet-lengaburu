@@ -105,11 +105,11 @@ fun Family.findInLaws(name: String, isBrotherInLaw: Boolean): List<Person> {
     // -- Find from spouse's siblings --
     val spouse = if (family.husband?.name == name) family.wife else family.husband
     if (spouse != null && spouse.isChildOfParent) {
-        val spouseFamily = findFamilyByPerson(spouse)
-        spouseFamily?.parent?.children?.forEach {
-            if (isBrotherInLaw && it.husband != null && it.husband != spouse) {
+        val spouseParentFamily = findFamilyByPerson(spouse)?.parent
+        spouseParentFamily?.children?.filter { it != family }?.forEach {
+            if (isBrotherInLaw && it.husband != null) {
                 inLaws.add(it.husband)
-            } else if (it.wife != null && it.wife != spouse) {
+            } else if (!isBrotherInLaw && it.wife != null && it.wife != spouse) {
                 inLaws.add(it.wife)
             }
         }
@@ -124,7 +124,7 @@ fun Family.findInLaws(name: String, isBrotherInLaw: Boolean): List<Person> {
     }?.forEach { siblingFamily ->
         if (isBrotherInLaw && siblingFamily.husband != null && !siblingFamily.husband.isChildOfParent) {
             inLaws.add(siblingFamily.husband)
-        } else if (siblingFamily.wife != null && !siblingFamily.wife.isChildOfParent) {
+        } else if (!isBrotherInLaw && siblingFamily.wife != null && !siblingFamily.wife.isChildOfParent) {
             inLaws.add(siblingFamily.wife)
         }
     }

@@ -5,7 +5,7 @@
  * @since 2024-11-06
  */
 class FamilyTree {
-    private val kingArthurFamily = generateFamilyOfKingArthur()
+    val kingArthurFamily = generateFamilyOfKingArthur()
 
     /**
      * a method to find add the child using the mother name and gender.
